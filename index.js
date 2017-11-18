@@ -4,8 +4,9 @@
  */
 var Neuvol = new Neuroevolution({
     population:50,
-    network:[2, [2], 1],
-    nbChild:30
+    network:[3, [3], 1],
+    nbChild:1,
+    elitism:0.5
 });;
 
 /**
@@ -168,7 +169,8 @@ setTimeout(function (){
                              */
                             var inputs = [
                                 (obstaclesAttr["xPos"] + obstaclesAttr["typeConfig"].width * obstaclesAttr["size"]) / _win.Runner.instance_.tRex.xPos,
-                                ((obstaclesAttr["yPos"] + obstaclesAttr["typeConfig"].height) / _win.Runner.instance_.tRex.yPos) < 1 ? 0 : 1
+                                ((obstaclesAttr["yPos"] + obstaclesAttr["typeConfig"].height) / _win.Runner.instance_.tRex.yPos) < 1 ? 0 : 1,
+                                obstaclesAttr["speedOffset"]
                             ];
 
                             // if(G_deaded.length == 49 && inputs[1] < 1){
