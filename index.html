@@ -11,7 +11,22 @@
     </style>
 </head>
 <body>
-    <script src="Neuroevolution.js"></script>
-    <script src="index.js"></script>
+    <script type="text/javascript">
+        
+        setTimeout(function (){
+
+            var body = document.getElementsByTagName('body')[0];
+            
+            function createScript(_path)
+            {
+                var scriptDom = document.createElement("script");
+                scriptDom.src = _path;
+                return scriptDom;
+            }
+
+            body.appendChild(createScript("Neuroevolution.js"));
+            body.appendChild(createScript("index.js" + "?v=" + Math.random()));
+        });
+    </script>
 </body>
 </html>
