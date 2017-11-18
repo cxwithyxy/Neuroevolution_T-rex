@@ -168,7 +168,7 @@ setTimeout(function (){
                              */
                             var inputs = [
                                 (obstaclesAttr["xPos"] + obstaclesAttr["typeConfig"].width * obstaclesAttr["size"]) / _win.Runner.instance_.tRex.xPos,
-                                (obstaclesAttr["yPos"] + obstaclesAttr["typeConfig"].height) / _win.Runner.instance_.tRex.yPos
+                                ((obstaclesAttr["yPos"] + obstaclesAttr["typeConfig"].height) / _win.Runner.instance_.tRex.yPos) < 1 ? 0 : 1
                             ];
 
                             // if(G_deaded.length == 49 && inputs[1] < 1){
