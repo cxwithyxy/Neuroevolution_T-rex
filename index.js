@@ -4,7 +4,7 @@ var ProjectName = 'Neuroevolution_T-rex';
  */
 var Neuvol = new Neuroevolution({
     population:50,
-    network:[2, [2], 1],
+    network:[2, [6], 1],
     nbChild:30
 });;
 
@@ -16,9 +16,7 @@ var G = null;
 if(localStorage.getItem(ProjectName)){
     var savingData = JSON.parse(localStorage.getItem(ProjectName));
     G = Neuvol.nextGeneration(savingData);
-    // for(var i = 0; i < G.length; i++){
-    //     G[i].setSave(savingData[i]);
-    // }
+    console.log('loaded');
 }else{
     G = Neuvol.nextGeneration();
 }
@@ -206,7 +204,7 @@ setTimeout(function (){
                         for(var i = 0; i < G.length; i++){
                             savingData.push(G[i].getSave());
                         }
-                        localStorage.setItem('ProjectName', JSON.stringify(savingData));
+                        localStorage.setItem(ProjectName, JSON.stringify(savingData));
 
                         G_deaded = [];
                         eachIframe(function (_win, _index){
