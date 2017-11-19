@@ -4,9 +4,9 @@
  */
 var Neuvol = new Neuroevolution({
     population:50,
-    network:[3, [3], 1],
+    network:[3, [2], 2],
     nbChild:1,
-    elitism:0.5
+    elitism:0.8
 });;
 
 /**
@@ -182,7 +182,7 @@ setTimeout(function (){
                              * 至于为什么是大于0.5才跳,那是我看那个神经网络版像素鸟抄过来的,反正我不懂
                              */
                             var res = G[_index].compute(inputs);
-                            if(res > 0.5){
+                            if(res[0] > 0.5 && res[1] > 0.5){
                                 pressJump(_win);
                             }
 
