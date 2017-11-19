@@ -24,6 +24,7 @@
                 return scriptDom;
             }
 
+            body.appendChild(createScript("zeroTimeout.js"));
             body.appendChild(createScript("Neuroevolution.js"));
             body.appendChild(createScript("index.js" + "?v=" + Math.random()));
         });

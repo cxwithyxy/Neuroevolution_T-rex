@@ -2,17 +2,31 @@
 /**
  * 神经网络初始化
  */
-var Neuvol = new Neuroevolution({
+var neuvolSetting = {
     population:50,
-    network:[3, [2], 2],
+    network:[2, [2], 1],
     nbChild:1,
-    elitism:0.8
-});;
+    elitism:0.5
+};
+
+var Neuvol = [
+    new Neuroevolution({
+        population:50,
+        network:[3, [2], 1],
+        nbChild:1,
+        elitism:0.5
+    }),
+    new Neuroevolution(neuvolSetting),
+    new Neuroevolution(neuvolSetting)
+];
 
 /**
  * 创建第一代神经元
  */
-var G = Neuvol.nextGeneration();
+var G = [];
+for(var i = 0; i < Neuvol.length; i++){
+    G.push(Neuvol[i].nextGeneration());
+}
 
 /**
  * 初始化死亡列表
@@ -93,7 +107,7 @@ function getObstaclesAttr(_win, _index, _attrs)
 
 setTimeout(function (){
     var body = document.getElementsByTagName('body')[0];
-    for(var i = 0; i < G.length; i++){
+    for(var i = 0; i < neuvolSetting.population; i++){
         var ifff = document.createElement('iframe');
         ifff.src="game.html";
         ifff.frameborder="0";
@@ -115,94 +129,106 @@ setTimeout(function (){
             {
 
                 /**
-                 * 这个setInterval
-                 * 就是多少秒拿一次信息给AI做一次决策
+                 * 这个setZeroTimeout
+                 * 就是以最快速度给AI做一次决策
                  */
-                setInterval(
-                    function ()
-                    {
-                        eachIframe(function (_win, _index){
-
-                            /**
-                             * 判断是不是死了
-                             */
-                            if(_win.Runner.instance_.crashed){
-
-                                /**
-                                 * 要是死了的话
-                                 * 就死的那一次让那个神经元拿一次得分好了,注意,是死的时候才给它分
-                                 */
-                                if(G_deaded.indexOf(_index) == -1){
-                                    Neuvol.networkScore(G[_index], Math.ceil(_win.Runner.instance_.distanceRan));
-                                    G_deaded.push(_index);
-                                }
-                                return;
-                            }
-
-                            if(!_win.Runner.instance_.tRex.yPos || !_win.Runner.instance_.tRex.xPos){
-                                return;
-                            }
-
-                            /**
-                             * 拿障碍物的几个属性
-                             */
-                            var obstaclesAttr = getObstaclesAttr(_win, 0, ["xPos", "yPos", "size", "typeConfig", "speedOffset"]);
-
-                            /**
-                             * 假如障碍物在后面的话,那没必要管了
-                             */
-                            if(obstaclesAttr["xPos"] <= _win.Runner.instance_.tRex.xPos){
-                                return;
-                            }
-
-                            /**
-                             * 假如小恐龙还在空中的话,那就不用想着要不要跳的事情了
-                             */
-                            if(_win.Runner.instance_.tRex.jumping){
-                                return;
-                            }
-
-                            /**
-                             * 构建输入数据
-                             * 这个就是AI能看到的数据
-                             * 这些数据会很大程度上影响到AI的决策
-                             */
-                            var inputs = [
-                                (obstaclesAttr["xPos"] + obstaclesAttr["typeConfig"].width * obstaclesAttr["size"]) / _win.Runner.instance_.tRex.xPos,
-                                ((obstaclesAttr["yPos"] + obstaclesAttr["typeConfig"].height) / _win.Runner.instance_.tRex.yPos) < 1 ? 0 : 1,
-                                obstaclesAttr["speedOffset"]
-                            ];
-
-                            // if(G_deaded.length == 49 && inputs[1] < 1){
-                            //     console.log("bird");
-                            // }
-
-                            /**
-                             * 拿到AI自己分析后的结果数据,就是AI的决策结果
-                             * 至于为什么是大于0.5才跳,那是我看那个神经网络版像素鸟抄过来的,反正我不懂
-                             */
-                            var res = G[_index].compute(inputs);
-                            if(res[0] > 0.5 && res[1] > 0.5){
-                                pressJump(_win);
-                            }
-
-                        });
+                setZeroTimeout(function (){
+                    eachIframe(function (_win, _index){
 
                         /**
-                         * 判断是不是游戏已经都结束了
-                         * 要是都死光了,那就开启新的一代重新开始游戏
-                         * 当然新的一代会继承上一代的东西,因此一代比一代聪明
+                         * 判断是不是死了
                          */
-                        if(isAllEnd()){
-                            G = Neuvol.nextGeneration();
-                            G_deaded = [];
-                            eachIframe(function (_win, _index){
-                                 restart(_win);
-                            })
+                        if(_win.Runner.instance_.crashed){
+
+                            /**
+                             * 要是死了的话
+                             * 就死的那一次让那个神经元拿一次得分好了,注意,是死的时候才给它分
+                             */
+                            if(G_deaded.indexOf(_index) == -1){
+                                for(var i = 0; i < G.length; i++){
+                                    Neuvol[i].networkScore(G[i][_index], Math.ceil(_win.Runner.instance_.distanceRan));
+                                }
+                                G_deaded.push(_index);
+                            }
+                            return;
                         }
-                    },
-                    1000/120
-                );
+
+                        if(!_win.Runner.instance_.tRex.yPos || !_win.Runner.instance_.tRex.xPos){
+                            return;
+                        }
+
+                        /**
+                         * 拿障碍物的几个属性
+                         */
+                        var obstaclesAttr = getObstaclesAttr(_win, 0, ["xPos", "yPos", "size", "typeConfig", "speedOffset"]);
+
+                        /**
+                         * 假如障碍物在后面的话,那没必要管了
+                         */
+                        if(obstaclesAttr["xPos"] <= _win.Runner.instance_.tRex.xPos){
+                            return;
+                        }
+
+                        /**
+                         * 假如小恐龙还在空中的话,那就不用想着要不要跳的事情了
+                         */
+                        if(_win.Runner.instance_.tRex.jumping){
+                            return;
+                        }
+
+                        /**
+                         * 构建输入数据
+                         * 这个就是AI能看到的数据
+                         * 这些数据会很大程度上影响到AI的决策
+                         */
+                        
+                        var input_0 = [
+                            obstaclesAttr["xPos"],
+                            _win.Runner.instance_.tRex.xPos,
+                            obstaclesAttr["speedOffset"]
+                        ];
+                        var input_1 = [
+                            obstaclesAttr["yPos"] + obstaclesAttr["typeConfig"].height,
+                            _win.Runner.instance_.tRex.yPos
+                        ];
+                        var res_0 = G[0][_index].compute(input_0)[0] > 0.5 ? 1 : 0;
+                        var res_1 = G[1][_index].compute(input_1)[0] > 0.5 ? 1 : 0;
+
+                        var input_2 = [res_0, res_1];
+                        
+                        // if(_index == 0){
+                        //     console.log(input_2);
+                        // }
+
+                        /**
+                         * 拿到AI自己分析后的结果数据,就是AI的决策结果
+                         * 至于为什么是大于0.5才跳,那是我看那个神经网络版像素鸟抄过来的,反正我不懂
+                         */
+                        var res = G[2][_index].compute(input_2);
+                        if(res[0] > 0.5){
+                            pressJump(_win);
+                        }
+
+                    });
+
+                    /**
+                     * 判断是不是游戏已经都结束了
+                     * 要是都死光了,那就开启新的一代重新开始游戏
+                     * 当然新的一代会继承上一代的东西,因此一代比一代聪明
+                     */
+                    if(isAllEnd()){
+                        G = [];
+                        G_deaded = [];
+                        for(var i = 0; i < Neuvol.length; i++){
+                            G.push(Neuvol[i].nextGeneration());
+                        }
+                        eachIframe(function (_win, _index){
+                             restart(_win);
+                        })
+                    }
+
+                    setZeroTimeout(arguments.callee);
+                })
             },1000)
             
         },
