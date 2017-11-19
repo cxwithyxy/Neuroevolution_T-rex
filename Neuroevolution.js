@@ -593,7 +593,7 @@ var Neuroevolution = function(options){
      *
      * @return Neural Network array for next Generation.
      */
-    self.nextGeneration = function(){
+    self.nextGeneration = function(_network){
         var networks = [];
 
         if(self.generations.generations.length == 0){
@@ -606,6 +606,9 @@ var Neuroevolution = function(options){
 
             // Create Networks from the current Generation.
         var nns = [];
+        if(_network){
+            networks = _network;
+        }
         for(var i in networks){
             var nn = new Network();
             nn.setSave(networks[i]);
