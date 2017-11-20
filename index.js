@@ -26,7 +26,7 @@ if(localStorage.getItem(ProjectName)){
  */
 var G_deaded = [];
 
-iframeList = [];
+var iframeList = null;
 
 /**
  * 操控每一个iframe
