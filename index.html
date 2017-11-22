@@ -12,21 +12,31 @@
 </head>
 <body>
     <script type="text/javascript">
-        
         setTimeout(function (){
 
             var body = document.getElementsByTagName('body')[0];
             
-            function createScript(_path)
+            function createScript(_path, _do)
             {
                 var scriptDom = document.createElement("script");
                 scriptDom.src = _path;
+                scriptDom.onload = function (){
+                    _do?_do():0;
+                }
                 return scriptDom;
             }
 
-            body.appendChild(createScript("zeroTimeout.js"));
-            body.appendChild(createScript("Neuroevolution.js"));
-            body.appendChild(createScript("index.js" + "?v=" + Math.random()));
+            body.appendChild(createScript("zeroTimeout.js", 
+                function ()
+                {
+                    body.appendChild(createScript("Neuroevolution.js", 
+                        function ()
+                        {
+                            body.appendChild(createScript("index.js" + "?v=" + Math.random()));
+                        }
+                    ));
+                }
+            ));
         });
     </script>
 </body>
