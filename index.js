@@ -4,8 +4,10 @@ var ProjectName = 'Neuroevolution_T-rex';
  */
 var Neuvol = new Neuroevolution({
     population:50,
-    network:[2, [6], 1],
-    nbChild:30
+    network:[8, [7], 2],
+    mutationRate: 0.5,
+    nbChild:2,
+    // randomBehaviour: 0.8
 });;
 
 /**
@@ -20,6 +22,8 @@ if(localStorage.getItem(ProjectName)){
 }else{
     G = Neuvol.nextGeneration();
 }
+
+var generationCount= 1;
 
 /**
  * 初始化死亡列表
@@ -49,6 +53,17 @@ function pressJump(_win)
         {
             keyCode: 38,
             target: 1
+        }
+    );
+}
+
+function pressDuck(_win)
+{
+    _win.Runner.instance_.onKeyDown(
+        {
+            keyCode: 40,
+            target: 1,
+            preventDefault: function (){}
         }
     );
 }
@@ -161,34 +176,31 @@ setTimeout(function (){
                         }
 
                         /**
-                         * 假如小恐龙还在空中的话,那就不用想着要不要跳的事情了
-                         */
-                        if(_win.Runner.instance_.tRex.jumping){
-                            return;
-                        }
-
-                        /**
                          * 构建输入数据
                          * 这个就是AI能看到的数据
                          * 这些数据会很大程度上影响到AI的决策
                          */
                         var inputs = [
-                            (obstaclesAttr["xPos"] + obstaclesAttr["typeConfig"].width * obstaclesAttr["size"]) / _win.Runner.instance_.tRex.xPos,
-                            ((obstaclesAttr["yPos"] + obstaclesAttr["typeConfig"].height) / _win.Runner.instance_.tRex.yPos) < 1 ? 0 : 1
+                            obstaclesAttr["xPos"],
+                            obstaclesAttr["typeConfig"].width,
+                            obstaclesAttr["size"],
+                            _win.Runner.instance_.tRex.xPos,
+                            obstaclesAttr["yPos"],
+                            obstaclesAttr["typeConfig"].height,
+                            _win.Runner.instance_.tRex.yPos,
+                            obstaclesAttr["speedOffset"]
                         ];
 
-                        // if(G_deaded.length == 49 && inputs[1] < 1){
-                        //     console.log("bird");
-                        // }
-
-                        /**
-                         * 拿到AI自己分析后的结果数据,就是AI的决策结果
-                         * 至于为什么是大于0.5才跳,那是我看那个神经网络版像素鸟抄过来的,反正我不懂
-                         */
                         var res = G[_index].compute(inputs);
-                        if(res > 0.5){
-                            pressJump(_win);
+                        if(res[0] > 0.5){
+                            pressDuck(_win);
                         }
+                        if(!_win.Runner.instance_.tRex.jumping){
+                            if(res[1] > 0.5){
+                                pressJump(_win);
+                            }
+                        }
+
 
                     });
 
@@ -200,16 +212,18 @@ setTimeout(function (){
                     if(isAllEnd()){
                         G = Neuvol.nextGeneration();
 
-                        var savingData = [];
-                        for(var i = 0; i < G.length; i++){
-                            savingData.push(G[i].getSave());
-                        }
-                        localStorage.setItem(ProjectName, JSON.stringify(savingData));
+                        // var savingData = [];
+                        // for(var i = 0; i < G.length; i++){
+                        //     savingData.push(G[i].getSave());
+                        // }
+                        // localStorage.setItem(ProjectName, JSON.stringify(savingData));
 
                         G_deaded = [];
                         eachIframe(function (_win, _index){
                              restart(_win);
-                        })
+                        });
+                        generationCount ++;
+                        console.log("第" + generationCount + "代");
                     }
 
                     setZeroTimeout(arguments.callee);
