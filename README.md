@@ -18,8 +18,9 @@
 
 主要实现这些“智能”的类库来自于 Neuroevolution.js ，这个文件来自于[https://github.com/xviniette/FlappyLearning](https://github.com/xviniette/FlappyLearning)。
 
-至于为什么可以这么“智能”的话我就不知道了，反正我看不懂源码，只知道怎么输入数据给AI和获得AI的数据。
-那是看了上面像素鸟的代码才GET到的。
+经过一段时间的分析，整理了这样思路，大概看懂了神经网络的学习原理，但是这里还有一个遗传算法没有想明白。
+
+![](mind.png)
 
 ## 关于如何控制小恐龙游戏
 
