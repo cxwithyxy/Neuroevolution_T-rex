@@ -18,7 +18,19 @@
 
 主要实现这些“智能”的类库来自于 Neuroevolution.js ，这个文件来自于[https://github.com/xviniette/FlappyLearning](https://github.com/xviniette/FlappyLearning)。
 
-经过一段时间的分析，整理了这样思路，大概看懂了神经网络的学习原理，但是这里还有一个遗传算法没有想明白。
+经过一段时间的分析，整理了这样思路，大概看懂了神经网络的学习原理，还有遗传算法
+
+```
+结构关系图
+    - 种群
+        - 世代 * n
+            - 基因 * n
+                - 得分
+                - 神经网络
+                    - 神经层 * n
+                        - 神经元 * n
+
+```
 
 ![](mind.png)
 
