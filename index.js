@@ -212,11 +212,11 @@ setTimeout(function (){
                     if(isAllEnd()){
                         G = Neuvol.nextGeneration();
 
-                        // var savingData = [];
-                        // for(var i = 0; i < G.length; i++){
-                        //     savingData.push(G[i].getSave());
-                        // }
-                        // localStorage.setItem(ProjectName, JSON.stringify(savingData));
+                        var savingData = [];
+                        for(var i = 0; i < G.length; i++){
+                            savingData.push(G[i].getSave());
+                        }
+                        localStorage.setItem(ProjectName, JSON.stringify(savingData));
 
                         G_deaded = [];
                         eachIframe(function (_win, _index){
