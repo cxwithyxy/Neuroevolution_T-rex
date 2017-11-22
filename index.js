@@ -2,23 +2,23 @@ var ProjectName = 'Neuroevolution_T-rex';
 /**
  * 神经网络初始化
  */
-var Neuvol = new Neuroevolution({
-    population:50,
-    network:[2, [6], 1],
-    nbChild:30
-});;
+
+var Neuron = synaptic.Neuron,
+    Layer = synaptic.Layer,
+    Network = synaptic.Network,
+    Trainer = synaptic.Trainer,
+    Architect = synaptic.Architect;
+
+var population= 1;
 
 /**
  * 创建第一代神经元
  */
-var G = null;
+var G = [];
 
-if(localStorage.getItem(ProjectName)){
-    var savingData = JSON.parse(localStorage.getItem(ProjectName));
-    G = Neuvol.nextGeneration(savingData);
-    console.log('loaded');
-}else{
-    G = Neuvol.nextGeneration();
+for(var i = 0; i < population; i++){
+    G.push(new Architect.Perceptron(2, 6, 1));
+    // G.push(new Architect.Liquid(16, 160, 1, 240, 16*5));
 }
 
 /**
@@ -31,12 +31,10 @@ iframeList = [];
 /**
  * 操控每一个iframe
  */
-function eachIframe(_do){
-    if(!iframeList){
-        iframeList = document.getElementsByTagName('iframe');
-    }
+function eachIframe(_do)
+{
     for(var i = 0; i < iframeList.length; i++){
-        _do(iframeList[i].contentWindow, i);
+    _do(iframeList[i].contentWindow, i);
     }
 }
 
@@ -103,7 +101,7 @@ setTimeout(function (){
     for(var i = 0; i < G.length; i++){
         var ifff = document.createElement('iframe');
         ifff.src="game.html";
-        ifff.frameborder="0";
+        ifff.setAttribute("frameborder","0");
         iframeList.push(ifff);
         body.appendChild(ifff);
     }
@@ -138,7 +136,11 @@ setTimeout(function (){
                              * 就死的那一次让那个神经元拿一次得分好了,注意,是死的时候才给它分
                              */
                             if(G_deaded.indexOf(_index) == -1){
-                                Neuvol.networkScore(G[_index], Math.ceil(_win.Runner.instance_.distanceRan));
+                                G[_index].propagate(0.3, 
+                                    [
+                                        Math.ceil(_win.Runner.instance_.distanceRan)
+                                    ]
+                                );
                                 G_deaded.push(_index);
                             }
                             return;
@@ -185,7 +187,7 @@ setTimeout(function (){
                          * 拿到AI自己分析后的结果数据,就是AI的决策结果
                          * 至于为什么是大于0.5才跳,那是我看那个神经网络版像素鸟抄过来的,反正我不懂
                          */
-                        var res = G[_index].compute(inputs);
+                        var res = G[_index].activate(inputs)[0];
                         if(res > 0.5){
                             pressJump(_win);
                         }
@@ -198,14 +200,6 @@ setTimeout(function (){
                      * 当然新的一代会继承上一代的东西,因此一代比一代聪明
                      */
                     if(isAllEnd()){
-                        G = Neuvol.nextGeneration();
-
-                        var savingData = [];
-                        for(var i = 0; i < G.length; i++){
-                            savingData.push(G[i].getSave());
-                        }
-                        localStorage.setItem(ProjectName, JSON.stringify(savingData));
-
                         G_deaded = [];
                         eachIframe(function (_win, _index){
                              restart(_win);
