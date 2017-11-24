@@ -1,237 +1,111 @@
-var ProjectName = 'Neuroevolution_T-rex';
-/**
- * 神经网络初始化
- */
-var Neuvol = new Neuroevolution({
-    population:50,
-    network:[8, [7], 2],
-    mutationRate: 0.5,
-    nbChild:2,
-    // randomBehaviour: 0.8
-});;
+var ProjectName = 'Neuroevolution_T-rex_neataptic';
 
-/**
- * 创建第一代神经元
- */
-var G = null;
+var Neat    = neataptic.Neat;
+var Methods = neataptic.methods;
+var Config  = neataptic.Config;
+var Architect = neataptic.architect;
 
-if(localStorage.getItem(ProjectName)){
-    var savingData = JSON.parse(localStorage.getItem(ProjectName));
-    G = Neuvol.nextGeneration(savingData);
-    console.log('loaded');
-}else{
-    G = Neuvol.nextGeneration();
-}
-
-var generationCount= 1;
-
-/**
- * 初始化死亡列表
- */
-var G_deaded = [];
-
-iframeList = [];
-
-/**
- * 操控每一个iframe
- */
-function eachIframe(_do){
-    if(!iframeList){
-        iframeList = document.getElementsByTagName('iframe');
+var neat = new Neat(
+    8,
+    2,
+    null,
+    {
+        mutation: [
+            Methods.mutation.ADD_NODE,
+            Methods.mutation.SUB_NODE,
+            Methods.mutation.ADD_CONN,
+            Methods.mutation.SUB_CONN,
+            Methods.mutation.MOD_WEIGHT,
+            Methods.mutation.MOD_BIAS,
+            Methods.mutation.MOD_ACTIVATION,
+            Methods.mutation.ADD_GATE,
+            Methods.mutation.SUB_GATE,
+            Methods.mutation.ADD_SELF_CONN,
+            Methods.mutation.SUB_SELF_CONN,
+            Methods.mutation.ADD_BACK_CONN,
+            Methods.mutation.SUB_BACK_CONN
+        ],
+        elitism:5,
+        network: new Architect.Random(
+            8,
+            7,
+            2
+        )
     }
-    for(var i = 0; i < iframeList.length; i++){
-        _do(iframeList[i].contentWindow, i);
-    }
-}
+);
 
-/**
- * 让对应iframe的小恐龙跳起来
- */
-function pressJump(_win)
+G_deaded = [];
+generationCount = 0;
+
+setTimeout(function ()
 {
-    _win.Runner.instance_.onKeyDown(
-        {
-            keyCode: 38,
-            target: 1
-        }
-    );
-}
+    createIframe(50);
 
-function pressDuck(_win)
-{
-    _win.Runner.instance_.onKeyDown(
-        {
-            keyCode: 40,
-            target: 1,
-            preventDefault: function (){}
-        }
-    );
-}
+    setTimeout(function ()
+    {
+        eachIframe(function (_win){
+            pressJump(_win);
+        });
 
-/**
- * 重启某个iframe的小恐龙游戏
- */
-function restart(_win)
-{
-    _win.Runner.instance_.onKeyUp(
-        {
-            type: "mouseup",
-            target: _win.Runner.instance_.canvas,
-            button: 1
-        }
-    );
-}
+        setZeroTimeout(function (){
+            eachIframe(function (_win, _index){
 
-/**
- * 判断是不是所有iframe的小恐龙游戏都结束了
- */
-function isAllEnd(){
-    var alive = false;
-    eachIframe(function (_win){
-        if(!_win.Runner.instance_.crashed){
-            alive = true;
-        }
-    });
-    return !alive;
-}
-
-/**
- * 获取障碍物的一些属性,要是没有这个障碍物的话,所有属性都返回0
- */
-function getObstaclesAttr(_win, _index, _attrs)
-{
-    var lenOfAttrs = _attrs.length;
-    var attrObj = {};
-    for(var i = 0; i < lenOfAttrs; i++){
-        var theRes = 0;
-        if(typeof _win.Runner.instance_.horizon.obstacles[_index] != typeof UDFUDFUDF){
-            var theObstacle = _win.Runner.instance_.horizon.obstacles[_index];
-            theRes = theObstacle[_attrs[i]];
-        }
-        attrObj[_attrs[i]] = theRes;
-    }
-    return attrObj;
-}
-
-setTimeout(function (){
-    var body = document.getElementsByTagName('body')[0];
-    for(var i = 0; i < G.length; i++){
-        var ifff = document.createElement('iframe');
-        ifff.src="game.html";
-        ifff.frameborder="0";
-        iframeList.push(ifff);
-        body.appendChild(ifff);
-    }
-    setTimeout(
-        function ()
-        {
-
-            /**
-             * 摁一下跳键,让游戏启动
-             */
-            eachIframe(function (_win){
-                pressJump(_win);
-            });
-
-            setTimeout(function ()
-            {
-
-                /**
-                 * 这个setZeroTimeout
-                 * 就是以最快速度给AI做一次决策
-                 */
-                setZeroTimeout(function (){
-                    eachIframe(function (_win, _index){
-
-                        /**
-                         * 判断是不是死了
-                         */
-                        if(_win.Runner.instance_.crashed){
-
-                            /**
-                             * 要是死了的话
-                             * 就死的那一次让那个神经元拿一次得分好了,注意,是死的时候才给它分
-                             */
-                            if(G_deaded.indexOf(_index) == -1){
-                                Neuvol.networkScore(G[_index], Math.ceil(_win.Runner.instance_.distanceRan));
-                                G_deaded.push(_index);
-                            }
-                            return;
-                        }
-
-                        if(!_win.Runner.instance_.tRex.yPos || !_win.Runner.instance_.tRex.xPos){
-                            return;
-                        }
-
-                        /**
-                         * 拿障碍物的几个属性
-                         */
-                        var obstaclesAttr = getObstaclesAttr(_win, 0, ["xPos", "yPos", "size", "typeConfig", "speedOffset"]);
-
-                        /**
-                         * 假如障碍物在后面的话,那没必要管了
-                         */
-                        if(obstaclesAttr["xPos"] <= _win.Runner.instance_.tRex.xPos){
-                            return;
-                        }
-
-                        /**
-                         * 构建输入数据
-                         * 这个就是AI能看到的数据
-                         * 这些数据会很大程度上影响到AI的决策
-                         */
-                        var inputs = [
-                            obstaclesAttr["xPos"],
-                            obstaclesAttr["typeConfig"].width,
-                            obstaclesAttr["size"],
-                            _win.Runner.instance_.tRex.xPos,
-                            obstaclesAttr["yPos"],
-                            obstaclesAttr["typeConfig"].height,
-                            _win.Runner.instance_.tRex.yPos,
-                            obstaclesAttr["speedOffset"]
-                        ];
-
-                        var res = G[_index].compute(inputs);
-                        if(res[0] > 0.5){
-                            pressDuck(_win);
-                        }
-                        if(!_win.Runner.instance_.tRex.jumping){
-                            if(res[1] > 0.5){
-                                pressJump(_win);
-                            }
-                        }
-
-
-                    });
-
-                    /**
-                     * 判断是不是游戏已经都结束了
-                     * 要是都死光了,那就开启新的一代重新开始游戏
-                     * 当然新的一代会继承上一代的东西,因此一代比一代聪明
-                     */
-                    if(isAllEnd()){
-                        G = Neuvol.nextGeneration();
-
-                        var savingData = [];
-                        for(var i = 0; i < G.length; i++){
-                            savingData.push(G[i].getSave());
-                        }
-                        localStorage.setItem(ProjectName, JSON.stringify(savingData));
-
-                        G_deaded = [];
-                        eachIframe(function (_win, _index){
-                             restart(_win);
-                        });
-                        generationCount ++;
-                        console.log("第" + generationCount + "代");
+                if(_win.Runner.instance_.crashed){
+                    if(G_deaded.indexOf(_index) == -1){
+                        neat.population[_index].score = Math.ceil(_win.Runner.instance_.distanceRan);
+                        G_deaded.push(_index);
                     }
+                    return;
+                }
+                var obstaclesAttr = getObstaclesAttr(_win, _index, ["xPos", "yPos", "size", "typeConfig", "speedOffset"]);
+                var inputs = [
+                    obstaclesAttr["xPos"],
+                    obstaclesAttr["typeConfig"].width,
+                    obstaclesAttr["size"],
+                    _win.Runner.instance_.tRex.xPos,
+                    obstaclesAttr["yPos"],
+                    obstaclesAttr["typeConfig"].height,
+                    _win.Runner.instance_.tRex.yPos,
+                    obstaclesAttr["speedOffset"]
+                ];
+                var res = neat.population[_index].activate(inputs);
+                if(res[0] > 0.5){
+                    pressDuck(_win);
+                }
+                if(!_win.Runner.instance_.tRex.jumping){
+                    if(res[1] > 0.5){
+                        pressJump(_win);
+                    }
+                }
+            });
+            if(isAllEnd()){
 
-                    setZeroTimeout(arguments.callee);
+                var newPopulation = [];
+
+                  // Elitism
+                for(var i = 0; i < neat.elitism; i++){
+                    newPopulation.push(neat.population[i]);
+                }
+
+                for(var i = 0; i < neat.popsize - neat.elitism; i++){
+                    newPopulation.push(neat.getOffspring());
+                }
+
+                neat.population = newPopulation;
+
+                neat.population.sort();
+                neat.mutate();
+
+                G_deaded = [];
+                eachIframe(function (_win, _index){
+                     restart(_win);
                 });
+                generationCount ++;
+                console.log("第" + generationCount + "代");
+            }
 
-            },1000)
-            
-        },
-        10000
-    )
-},500);
+            setZeroTimeout(arguments.callee);
+        });
+
+    }, 3000);
+});
