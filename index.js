@@ -166,7 +166,7 @@ setTimeout(function (){
                         /**
                          * 拿障碍物的几个属性
                          */
-                        var obstaclesAttr = getObstaclesAttr(_win, 0, ["xPos", "yPos", "size", "typeConfig", "speedOffset"]);
+                        var obstaclesAttr = getObstaclesAttr(_win, _index, ["xPos", "yPos", "size", "typeConfig", "speedOffset"]);
 
                         /**
                          * 假如障碍物在后面的话,那没必要管了
