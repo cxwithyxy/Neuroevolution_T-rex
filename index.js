@@ -14,11 +14,13 @@ var neat = new Neat(
     },
     {
         popsize: 50,
-        mutation: Methods.mutation.ALL,
+        mutation: [Methods.mutation.MOD_WEIGHT],
         // selection: Methods.selection.POWER,
         mutationRate: 0.5,
-        fitnessPopulation: true,
-        network: new Architect.Perceptron(12,10,2)
+        mutationAmount: Math.round(50*0.5),
+        // fitnessPopulation: true,
+        network: new Architect.Perceptron(12, 10, 2),
+        elitism: Math.round(50*0.2)
     }
 );
 
@@ -106,5 +108,5 @@ setTimeout(function ()
 
         });
 
-    }, 5000);
+    }, 8000);
 });
