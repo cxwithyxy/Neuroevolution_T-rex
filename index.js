@@ -1,10 +1,10 @@
-var ProjectName = 'Neuroevolution_T-rex';
+var ProjectName = 'Neuroevolution_T-rex_v1.0.1';
 /**
  * 神经网络初始化
  */
 var Neuvol = new Neuroevolution({
     population:50,
-    network:[8, [7], 2],
+    network:[11, [9], 2],
     mutationRate: 0.5,
     nbChild:2,
     // randomBehaviour: 0.8
@@ -82,13 +82,6 @@ setTimeout(function (){
                         var obstaclesAttr = getObstaclesAttr(_win, 0, ["xPos", "yPos", "size", "typeConfig", "speedOffset"]);
 
                         /**
-                         * 假如障碍物在后面的话,那没必要管了
-                         */
-                        if(obstaclesAttr["xPos"] <= _win.Runner.instance_.tRex.xPos){
-                            return;
-                        }
-
-                        /**
                          * 构建输入数据
                          * 这个就是AI能看到的数据
                          * 这些数据会很大程度上影响到AI的决策
@@ -98,20 +91,22 @@ setTimeout(function (){
                             obstaclesAttr["typeConfig"].width,
                             obstaclesAttr["size"],
                             _win.Runner.instance_.tRex.xPos,
+                            _win.Runner.instance_.tRex.config.WIDTH,
                             obstaclesAttr["yPos"],
                             obstaclesAttr["typeConfig"].height,
                             _win.Runner.instance_.tRex.yPos,
-                            obstaclesAttr["speedOffset"]
+                            _win.Runner.instance_.tRex.config.HEIGHT,
+                            obstaclesAttr["speedOffset"],
+                            _win.Runner.instance_.tRex.jumping ? 1 : 0,
+                            Math.ceil(_win.Runner.instance_.distanceRan)
                         ];
 
                         var res = G[_index].compute(inputs);
                         if(res[0] > 0.5){
-                            pressDuck(_win);
+                            pressJump(_win);
                         }
-                        if(!_win.Runner.instance_.tRex.jumping){
-                            if(res[1] > 0.5){
-                                pressJump(_win);
-                            }
+                        if(res[1] > 0.5){
+                            pressDuck(_win);
                         }
 
 
