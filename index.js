@@ -1,4 +1,4 @@
-var ProjectName = 'Neuroevolution_T-rex_neataptic';
+var ProjectName = 'Neuroevolution_T-rex_neataptic_v1.0';
 
 var Neat    = neataptic.Neat;
 var Methods = neataptic.methods;
@@ -6,28 +6,15 @@ var Config  = neataptic.Config;
 var Architect = neataptic.architect;
 
 var neat = new Neat(
-    8,
+    9,
     2,
     null,
     {
-        mutation: [
-            Methods.mutation.ADD_NODE,
-            Methods.mutation.SUB_NODE,
-            Methods.mutation.ADD_CONN,
-            Methods.mutation.SUB_CONN,
-            Methods.mutation.MOD_WEIGHT,
-            Methods.mutation.MOD_BIAS,
-            Methods.mutation.MOD_ACTIVATION,
-            Methods.mutation.ADD_GATE,
-            Methods.mutation.SUB_GATE,
-            Methods.mutation.ADD_SELF_CONN,
-            Methods.mutation.SUB_SELF_CONN,
-            Methods.mutation.ADD_BACK_CONN,
-            Methods.mutation.SUB_BACK_CONN
-        ],
-        elitism:5,
+        mutation: Methods.mutation.ALL,
+        mutationRate:0.8,
+        elitism:1,
         network: new Architect.Random(
-            8,
+            9,
             7,
             2
         )
@@ -66,20 +53,20 @@ setTimeout(function ()
                     obstaclesAttr["yPos"],
                     obstaclesAttr["typeConfig"].height,
                     _win.Runner.instance_.tRex.yPos,
-                    obstaclesAttr["speedOffset"]
+                    obstaclesAttr["speedOffset"],
+                    _win.Runner.instance_.tRex.jumping ? 1 : 0
                 ];
                 var res = neat.population[_index].activate(inputs);
                 if(res[0] > 0.5){
-                    pressDuck(_win);
+                    pressJump(_win);
                 }
-                if(!_win.Runner.instance_.tRex.jumping){
-                    if(res[1] > 0.5){
-                        pressJump(_win);
-                    }
+                if(res[1] > 0.5){
+                    pressDuck(_win);
                 }
             });
             if(isAllEnd()){
 
+                neat.sort();
                 var newPopulation = [];
 
                   // Elitism
@@ -93,7 +80,6 @@ setTimeout(function ()
 
                 neat.population = newPopulation;
 
-                neat.population.sort();
                 neat.mutate();
 
                 G_deaded = [];
