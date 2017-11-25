@@ -5,6 +5,8 @@ var Methods = neataptic.methods;
 var Config  = neataptic.Config;
 var Architect = neataptic.architect;
 
+var startNetwork = new Architect.Perceptron(12, 10, 2);
+
 var neat = new Neat(
     12,
     2,
@@ -19,7 +21,7 @@ var neat = new Neat(
         mutationRate: 0.5,
         mutationAmount: Math.round(50*0.5),
         // fitnessPopulation: true,
-        network: new Architect.Perceptron(12, 10, 2),
+        network: startNetwork,
         elitism: Math.round(50*0.2)
     }
 );
