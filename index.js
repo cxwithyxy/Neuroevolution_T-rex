@@ -6,27 +6,29 @@ var Config  = neataptic.Config;
 var Architect = neataptic.architect;
 
 var neat = new Neat(
-    9,
+    12,
     2,
-    null,
+    function (_network)
     {
+        return _network.score;
+    },
+    {
+        popsize: 50,
         mutation: Methods.mutation.ALL,
-        mutationRate:0.8,
-        elitism:1,
-        network: new Architect.Random(
-            9,
-            7,
-            2
-        )
+        // selection: Methods.selection.POWER,
+        mutationRate: 0.5,
+        fitnessPopulation: true,
+        network: new Architect.Perceptron(12,10,2)
     }
 );
 
-G_deaded = [];
-generationCount = 0;
+var G_deaded = [];
+
+var HighestScore = 0;
 
 setTimeout(function ()
 {
-    createIframe(50);
+    createIframe(neat.population.length);
 
     setTimeout(function ()
     {
@@ -40,21 +42,28 @@ setTimeout(function ()
                 if(_win.Runner.instance_.crashed){
                     if(G_deaded.indexOf(_index) == -1){
                         neat.population[_index].score = Math.ceil(_win.Runner.instance_.distanceRan);
+                        var tempHighestScore = Number(_win.Runner.instance_.distanceMeter.digits.join(""));
+                        if(tempHighestScore > HighestScore){
+                            HighestScore = tempHighestScore;
+                        }
                         G_deaded.push(_index);
                     }
                     return;
                 }
-                var obstaclesAttr = getObstaclesAttr(_win, _index, ["xPos", "yPos", "size", "typeConfig", "speedOffset"]);
+                var obstaclesAttr = getObstaclesAttr(_win, 0, ["xPos", "yPos", "size", "typeConfig", "speedOffset"]);
                 var inputs = [
                     obstaclesAttr["xPos"],
                     obstaclesAttr["typeConfig"].width,
                     obstaclesAttr["size"],
                     _win.Runner.instance_.tRex.xPos,
+                    _win.Runner.instance_.tRex.config.WIDTH,
                     obstaclesAttr["yPos"],
                     obstaclesAttr["typeConfig"].height,
                     _win.Runner.instance_.tRex.yPos,
+                    _win.Runner.instance_.tRex.config.HEIGHT,
                     obstaclesAttr["speedOffset"],
-                    _win.Runner.instance_.tRex.jumping ? 1 : 0
+                    _win.Runner.instance_.tRex.jumping ? 1 : 0,
+                    Math.ceil(_win.Runner.instance_.distanceRan)
                 ];
                 var res = neat.population[_index].activate(inputs);
                 if(res[0] > 0.5){
@@ -64,34 +73,38 @@ setTimeout(function ()
                     pressDuck(_win);
                 }
             });
+            var thisFun = arguments.callee;
             if(isAllEnd()){
 
-                neat.sort();
-                var newPopulation = [];
+                // neat.sort();
+                // var newPopulation = [];
 
-                  // Elitism
-                for(var i = 0; i < neat.elitism; i++){
-                    newPopulation.push(neat.population[i]);
-                }
+                //   // Elitism
+                // for(var i = 0; i < neat.elitism; i++){
+                //     newPopulation.push(neat.population[i]);
+                // }
 
-                for(var i = 0; i < neat.popsize - neat.elitism; i++){
-                    newPopulation.push(neat.getOffspring());
-                }
+                // for(var i = 0; i < neat.popsize - neat.elitism; i++){
+                //     newPopulation.push(neat.getOffspring());
+                // }
 
-                neat.population = newPopulation;
+                // neat.population = newPopulation;
 
-                neat.mutate();
-
-                G_deaded = [];
-                eachIframe(function (_win, _index){
-                     restart(_win);
+                neat.evolve().then(function ()
+                {
+                    console.log("第" + neat.generation + "代  ----  最高分 " + HighestScore);
+                    G_deaded = [];
+                    eachIframe(function (_win, _index){
+                         restart(_win);
+                    });
+                    HighestScore = 0;
+                    setZeroTimeout(thisFun);
                 });
-                generationCount ++;
-                console.log("第" + generationCount + "代");
+            }else{
+                setZeroTimeout(thisFun);
             }
 
-            setZeroTimeout(arguments.callee);
         });
 
-    }, 3000);
+    }, 5000);
 });
