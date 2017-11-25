@@ -4,7 +4,7 @@ var ProjectName = 'Neuroevolution_T-rex_v1.0.1';
  */
 var Neuvol = new Neuroevolution({
     population:50,
-    network:[11, [9], 2],
+    network:[12, [10], 2],
     mutationRate: 0.5,
     nbChild:2,
     // randomBehaviour: 0.8
@@ -29,6 +29,8 @@ var generationCount= 1;
  * 初始化死亡列表
  */
 var G_deaded = [];
+
+var HighestScore = 0;
 
 
 setTimeout(function (){
@@ -68,6 +70,10 @@ setTimeout(function (){
                             if(G_deaded.indexOf(_index) == -1){
                                 Neuvol.networkScore(G[_index], Math.ceil(_win.Runner.instance_.distanceRan));
                                 G_deaded.push(_index);
+                                var tempHighestScore = Number(_win.Runner.instance_.distanceMeter.digits.join(""));
+                                if(tempHighestScore > HighestScore){
+                                    HighestScore = tempHighestScore;
+                                }
                             }
                             return;
                         }
@@ -118,6 +124,7 @@ setTimeout(function (){
                      * 当然新的一代会继承上一代的东西,因此一代比一代聪明
                      */
                     if(isAllEnd()){
+                        console.log("第" + generationCount + "代  ----  最高分 " + HighestScore);
                         G = Neuvol.nextGeneration();
 
                         var savingData = [];
@@ -131,7 +138,6 @@ setTimeout(function (){
                              restart(_win);
                         });
                         generationCount ++;
-                        console.log("第" + generationCount + "代");
                     }
 
                     setZeroTimeout(arguments.callee);
