@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="cn">
+<head>
+  <meta charset="UTF-8">
+  <title>教育小恐龙</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+  <style>
+    iframe{
+      width: 450px;
+      height: 200px;
+      pointer-events: none;
+    }
+    .top{
+      width: 100%;
+      height: 50px;
+    }
+  </style>
+</head>
+<body>
+  <div class="top">
+    
+  </div>
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        你的小恐龙
+      </div>
+      <div class="col">
+        AI的小恐龙
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <iframe src="game.html" frameborder="0" scrolling="no"></iframe>
+      </div>
+      <div class="col">
+        <iframe src="game.html" frameborder="0" scrolling="no"></iframe>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        摁方向上键让恐龙跳起来，摁R键重新开始游戏
+      </div>
+      <div class="col">
+        ---AI的小恐龙---
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="https://cdn.bootcss.com/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+  <script type="text/javascript">
+    setTimeout(function (){
+
+      var body = document.getElementsByTagName('body')[0];
+      
+      function createScript(_path, _do)
+      {
+        var scriptDom = document.createElement("script");
+        scriptDom.src = _path;
+        scriptDom.onload = function (){
+          _do?_do():0;
+        }
+        return scriptDom;
+      }
+
+      body.appendChild(createScript("zeroTimeout.js", 
+        function ()
+        {
+          body.appendChild(createScript("neataptic.js", 
+            function ()
+            {
+              body.appendChild(createScript("gameLib.js",
+                function ()
+                {
+                  body.appendChild(createScript("teachAndLearn.js" + "?v=" + Math.random()));
+                }
+              ));
+            }
+          ));
+        }
+      ));
+    });
+  </script>
+</body>
+</html>
