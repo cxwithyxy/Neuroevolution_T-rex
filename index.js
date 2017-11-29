@@ -57,12 +57,12 @@ setTimeout(function ()
                 var obstaclesAttr = getObstaclesAttr(_win, 0, ["xPos", "yPos", "size", "typeConfig", "speedOffset"]);
                 var inputs = [
                     obstaclesAttr["xPos"],
-                    obstaclesAttr["typeConfig"].width,
+                    obstaclesAttr["typeConfig"].width ? obstaclesAttr["typeConfig"].width : 0,
                     obstaclesAttr["size"],
                     _win.Runner.instance_.tRex.xPos,
                     _win.Runner.instance_.tRex.config.WIDTH,
                     obstaclesAttr["yPos"],
-                    obstaclesAttr["typeConfig"].height,
+                    obstaclesAttr["typeConfig"].height ? obstaclesAttr["typeConfig"].height : 0,
                     _win.Runner.instance_.tRex.yPos,
                     _win.Runner.instance_.tRex.config.HEIGHT,
                     obstaclesAttr["speedOffset"],
