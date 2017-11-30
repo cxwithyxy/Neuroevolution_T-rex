@@ -46,7 +46,7 @@
         摁方向上键让恐龙跳起来，摁R键重新开始游戏
       </div>
       <div class="col">
-        ---AI的小恐龙---
+        <button type="button" class="btn btn-outline-primary btn-sm" onclick="AIRun()">训练小恐龙</button>
       </div>
     </div>
   </div>
@@ -68,22 +68,19 @@
         return scriptDom;
       }
 
-      body.appendChild(createScript("zeroTimeout.js", 
-        function ()
+      body.appendChild(createScript("zeroTimeout.js", function ()
+      {
+        body.appendChild(createScript("neataptic.js", function ()
         {
-          body.appendChild(createScript("neataptic.js", 
-            function ()
+          body.appendChild(createScript("gameLib.js", function ()
+          {
+            body.appendChild(createScript("trainedData.js", function ()
             {
-              body.appendChild(createScript("gameLib.js",
-                function ()
-                {
-                  body.appendChild(createScript("teachAndLearn.js" + "?v=" + Math.random()));
-                }
-              ));
-            }
-          ));
-        }
-      ));
+              body.appendChild(createScript("teachAndLearn.js" + "?v=" + Math.random()));
+            }));
+          }));
+        }));
+      }));
     });
   </script>
 </body>
