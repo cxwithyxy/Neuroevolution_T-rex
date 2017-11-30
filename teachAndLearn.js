@@ -6,7 +6,7 @@ var Architect = neataptic.architect;
 var playerIframe, AIIframe;
 var controlAble = true;
 
-var AINetwork = new Architect.Perceptron(11, 10, 1);
+var AINetwork = new Architect.Perceptron(1, 6, 1);
 
 var trainingData = [];
 
@@ -32,8 +32,10 @@ var keydownEventHL = {
                 }
             });
         }, 1000);
+        if(playerIframe.Runner.instance_.playing){
+            trainingData.push(getInputOrTrainingData(playerIframe, [1]));
+        }
         pressJump(playerIframe);
-        trainingData.push(getInputOrTrainingData(playerIframe, [1]));
     },
     "82": function ()
     {
@@ -51,17 +53,7 @@ function getInputOrTrainingData(_win, outputs)
     var obstaclesAttr = getObstaclesAttr(_win, 0, ["xPos", "yPos", "size", "typeConfig", "speedOffset"]);
 
     var inputs = [
-        obstaclesAttr["xPos"],
-        obstaclesAttr["typeConfig"].width ? obstaclesAttr["typeConfig"].width : 0,
-        obstaclesAttr["size"],
-        _win.Runner.instance_.tRex.xPos,
-        _win.Runner.instance_.tRex.config.WIDTH,
-        obstaclesAttr["yPos"],
-        obstaclesAttr["typeConfig"].height ? obstaclesAttr["typeConfig"].height : 0,
-        _win.Runner.instance_.tRex.yPos,
-        _win.Runner.instance_.tRex.config.HEIGHT,
-        obstaclesAttr["speedOffset"],
-        _win.Runner.instance_.tRex.jumping ? 1 : 0
+        obstaclesAttr["xPos"] / 600
     ];
     if(!outputs){
         return inputs;
@@ -82,7 +74,6 @@ function AIRun()
              * 获得神经网络输出的结果
              */
             var res = AINetwork.activate(getInputOrTrainingData(AIIframe));
-            
             /**
              * 结果[0]大于0.5时跳
              */
@@ -101,12 +92,15 @@ function AIRun()
 
 function trainAINetwork()
 {
-    AINetwork.train(trainingData, {
-        log: 10,
-        error: 0.03,
+    trainingData.splice(-100, 100);
+    var trainRes = AINetwork.train(trainingData, {
+        log: 50,
+        error: 0.004,
         iterations: 1000,
         rate: 0.3
     });
+    console.log(trainRes);
+    return trainRes;
 }
 
 /**
@@ -127,3 +121,17 @@ setTimeout(function ()
     AIIframe = iframes[1].contentWindow;
     document.addEventListener("keydown", keydownHL);
 });
+
+// var oldClog = console.log;
+// var clogDom = document.getElementById("clog");
+// console.log = function ()
+// {
+//     oldClog.apply(console, arguments);
+//     var lll = [];
+//     for(var i in arguments){
+//         if(!isNaN(Number(i))){
+//             lll.push(arguments[i])
+//         }
+//     }
+//     clogDom.innerHTML += '<li class="list-group-item">' + JSON.stringify(lll.join(" ")) + '</li>';
+// }
