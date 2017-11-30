@@ -43,17 +43,22 @@
   <div class="container">
     <div class="row">
       <div class="col">
-        摁方向上键让恐龙跳起来，摁R键重新开始游戏
+        摁方向上键让恐龙跳起来，你每次操作都会成为AI的训练数据，当游戏结束时，你可以点击右边的“训练小恐龙”看看你的小恐龙学会了你的跳法了没。
       </div>
       <div class="col">
-        <button type="button" class="btn btn-outline-primary btn-sm" onclick="AIRun()">训练小恐龙</button>
+        <div class="row">
+          <div class="col">
+            <button type="button" class="btn btn-outline-primary btn-sm" onclick="AIRun()">训练小恐龙</button>
+          </div>
+          <div class="col">
+            <ul class="list-group" id="clog"></ul>
+          </div>
+        </div>
       </div>
     </div>
   </div>
   <div class="container">
-    <ul class="list-group" id="clog">
-      
-    </ul>
+    
   </div>
   <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
   <script src="https://cdn.bootcss.com/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>

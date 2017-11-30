@@ -3,8 +3,7 @@ var Methods = neataptic.methods;
 var Config  = neataptic.Config;
 var Architect = neataptic.architect;
 
-var playerIframe, AIIframe;
-var controlAble = true;
+var playerIframe, AIIframe, clogDom;
 
 var AINetwork = new Architect.Perceptron(1, 6, 1);
 
@@ -20,22 +19,33 @@ var keydownEventHL = {
     {
         setTimeout(function ()
         {
-            setZeroTimeout(function ()
+            setTimeout(function ()
             {
                 if(playerIframe.Runner.instance_.playing){
-                    var oneTrainingData = getInputOrTrainingData(playerIframe, [0]);
-                    if(JSON.stringify(oneTrainingData.input) != lastInputs){
-                        trainingData.push(oneTrainingData);
-                        lastInputs = JSON.stringify(oneTrainingData.input);
+                    if(!playerIframe.Runner.instance_.tRex.jumping){
+                        var oneTrainingData = getInputOrTrainingData(playerIframe, [0]);
+                        if(!oneTrainingData.input[0]){
+                            return;
+                        }
+                        if(JSON.stringify(oneTrainingData.input) != lastInputs){
+                            trainingData.push(oneTrainingData);
+                            lastInputs = JSON.stringify(oneTrainingData.input);
+                        }
                     }
-                    setZeroTimeout(arguments.callee);
+                    setTimeout(arguments.callee, 800);
                 }
-            });
-        }, 1000);
+            }, 800);
+        }, 2200);
         if(playerIframe.Runner.instance_.playing){
             trainingData.push(getInputOrTrainingData(playerIframe, [1]));
         }
         pressJump(playerIframe);
+    },
+    "40": function ()
+    {
+        if(!playerIframe.Runner.instance_.tRex.jumping){
+            trainingData.push(getInputOrTrainingData(playerIframe, [0]));
+        }
     },
     "82": function ()
     {
@@ -63,6 +73,10 @@ function getInputOrTrainingData(_win, outputs)
 
 function AIRun()
 {
+    if(trainingData.length == 0){
+        alert("还没有训练数据，请操作左边小恐龙游戏以产生训练数据");
+        return;
+    }
     trainAINetwork();
     setTimeout(function ()
     {
@@ -85,6 +99,10 @@ function AIRun()
 
             if(AIIframe.Runner.instance_.playing){
                 setZeroTimeout(thisFun);
+            }else{
+                clogDom.innerHTML = '<li class="list-group-item">' 
+                    + "AI操作结束了，你可以刷新页面重头再来"
+                    + '</li>';
             }
         });
     }, 1000);
@@ -92,12 +110,15 @@ function AIRun()
 
 function trainAINetwork()
 {
-    trainingData.splice(-100, 100);
+    var killDataNum = Math.round(trainingData.length * 1 /10 / 2);
+    trainingData.splice(0, killDataNum);
+    trainingData.splice(-killDataNum, killDataNum);
+
     var trainRes = AINetwork.train(trainingData, {
-        log: 50,
+        log: 100,
         error: 0.004,
-        iterations: 1000,
-        rate: 0.3
+        iterations: 5000,
+        rate: 0.5
     });
     console.log(trainRes);
     return trainRes;
@@ -116,14 +137,15 @@ function keydownHL(e)
 setTimeout(function ()
 {
     console.log("work");
+    clogDom = document.getElementById("clog");
     var iframes = document.getElementsByTagName('iframe');
     playerIframe = iframes[0].contentWindow;
     AIIframe = iframes[1].contentWindow;
     document.addEventListener("keydown", keydownHL);
 });
 
+
 // var oldClog = console.log;
-// var clogDom = document.getElementById("clog");
 // console.log = function ()
 // {
 //     oldClog.apply(console, arguments);
