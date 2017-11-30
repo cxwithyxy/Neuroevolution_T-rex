@@ -22,9 +22,20 @@ function pressJump(_win)
     );
 }
 
-function pressDuck(_win)
+function downDuck(_win)
 {
     _win.Runner.instance_.onKeyDown(
+        {
+            keyCode: 40,
+            target: 1,
+            preventDefault: function (){}
+        }
+    );
+}
+
+function upDuck(_win)
+{
+    _win.Runner.instance_.onKeyUp(
         {
             keyCode: 40,
             target: 1,
