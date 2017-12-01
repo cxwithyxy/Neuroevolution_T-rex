@@ -27,22 +27,19 @@
                 return scriptDom;
             }
 
-            body.appendChild(createScript("zeroTimeout.js", 
-                function ()
+            body.appendChild(createScript("zeroTimeout.js", function ()
+            {
+                body.appendChild(createScript("neataptic.js", function ()
                 {
-                    body.appendChild(createScript("neataptic.js", 
-                        function ()
+                    body.appendChild(createScript("gameLib.js", function ()
+                    {
+                        body.appendChild(createScript("contorllerAI.js", function ()
                         {
-                            body.appendChild(createScript("gameLib.js",
-                                function ()
-                                {
-                                    body.appendChild(createScript("index.js" + "?v=" + Math.random()));
-                                }
-                            ));
-                        }
-                    ));
-                }
-            ));
+                            body.appendChild(createScript("index.js" + "?v=" + Math.random()));
+                        }));
+                    }));
+                }));
+            }));
         });
     </script>
 </body>

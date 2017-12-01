@@ -11,13 +11,15 @@ var Architect = neataptic.architect;
 /**
  * 设定小恐龙的数据输入和输出数目
  */
-var inputNum = 12;
-var outputNum = 2;
+var inputNum = 4;
+var outputNum = 3;
 
 /**
  * 初始化基础神经网络
  */
-var startNetwork = new Architect.Perceptron(inputNum, 10, outputNum);
+var startNetwork = new Architect.Perceptron(inputNum, inputNum + outputNum, outputNum);
+
+var popsize = 50;
 
 /**
  * 初始化遗传进化神经网络
@@ -30,14 +32,14 @@ var neat = new Neat(
         return _network.score;
     },
     {
-        popsize: 50,
+        popsize: popsize,
         mutation: [Methods.mutation.MOD_WEIGHT],
         // selection: Methods.selection.POWER,
         mutationRate: 0.5,
-        mutationAmount: Math.round(50*0.5),
+        mutationAmount: Math.round(popsize*0.5),
         // fitnessPopulation: true,
         network: startNetwork,
-        elitism: Math.round(50*0.2)
+        elitism: Math.round(popsize*0.2)
     }
 );
 
@@ -87,13 +89,6 @@ setTimeout(function ()
                 }
 
                 /**
-                 * 预设小恐龙下蹲中继器
-                 */
-                if(typeof _win.isDucked == typeof UDF){
-                    _win.isDucked = 0;
-                }
-
-                /**
                  * 获取小恐龙游戏的第一个障碍物
                  */
                 var obstaclesAttr = getObstaclesAttr(_win, 0, ["xPos", "yPos", "size", "typeConfig", "speedOffset"]);
@@ -101,45 +96,60 @@ setTimeout(function ()
                 /**
                  * 构建输入给神经网络的数据
                  */
+                
+                var obstaclesWidth = 0;
+                if(obstaclesAttr["typeConfig"].width){
+                    obstaclesWidth = obstaclesAttr["typeConfig"].width * obstaclesAttr["size"];
+                }
+
+                var obstaclesHeight = 0;
+                if(obstaclesAttr["typeConfig"].height){
+                    obstaclesHeight = obstaclesAttr["typeConfig"].height;
+                }
+                
                 var inputs = [
-                    obstaclesAttr["xPos"],
-                    obstaclesAttr["typeConfig"].width ? obstaclesAttr["typeConfig"].width : 0,
-                    obstaclesAttr["size"],
-                    _win.Runner.instance_.tRex.xPos,
-                    _win.Runner.instance_.tRex.config.WIDTH,
-                    obstaclesAttr["yPos"],
-                    obstaclesAttr["typeConfig"].height ? obstaclesAttr["typeConfig"].height : 0,
-                    _win.Runner.instance_.tRex.yPos,
-                    _win.Runner.instance_.tRex.config.HEIGHT,
-                    obstaclesAttr["speedOffset"],
-                    _win.Runner.instance_.tRex.jumping ? 1 : 0,
-                    _win.isDucked
+                    obstaclesAttr["xPos"] / 450,
+                    obstaclesWidth / 450,
+                    obstaclesAttr["yPos"] / 160,
+                    obstaclesHeight / 160,
                 ];
 
                 /**
-                 * 获得神经网络输出的结果
+                 * 获得神经网络输出的结果,小恐龙大脑对当前状态的判断,目标状态应该是如何的
                  */
                 var res = neat.population[_index].activate(inputs);
                 
+                var nowState = [
+                    _win.Runner.instance_.tRex.jumping ? 1 : 0,
+                    !_win.Runner.instance_.tRex.ducking && !_win.Runner.instance_.tRex.jumping ? 1 : 0,
+                    _win.Runner.instance_.tRex.ducking ? 1 : 0,
+                ];
+
                 /**
-                 * 结果[0]大于0.5时跳
+                 * 让controllerAI进行操作,就是小恐龙的手,判断到达目标状态应该进行怎么的操作
+                 * @type {[type]}
                  */
-                if(res[0] > 0.5){
+                var controllerAIInput = res.concat(nowState);
+
+                var controllerAIOutput = controllerAINetwork.activate(controllerAIInput);
+
+                if(controllerAIInput[2] > 0.5){
+                    downDuck(_win);
+                }
+                
+                if(
+                    controllerAIInput[1] > 0.5 
+                    && _win.Runner.instance_.tRex.ducking
+                    && !_win.Runner.instance_.tRex.jumping
+                ){
+                    upDuck(_win);
+                }
+
+                if(controllerAIInput[0] > 0.5){
                     pressJump(_win);
                 }
 
-                /**
-                 * 结果[1]大于0.5时切换下端模式
-                 */
-                if(res[1] > 0.5){
-                    if(_win.isDucked){
-                        upDuck(_win);
-                        _win.isDucked = 0;
-                    }else{
-                        downDuck(_win);
-                        _win.isDucked = 1;
-                    }
-                }
+
             });
 
             var thisFun = arguments.callee;
