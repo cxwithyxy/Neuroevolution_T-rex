@@ -3,6 +3,13 @@ var ProjectName = 'Neuroevolution_T-rex_neataptic_v1.0';
 /**
  * 映射neataptic模块中的类
  */
+
+var gameLib = require("./gameLib.js");
+var setZeroTimeout = require("./zeroTimeout.js");
+var controllerAINetwork = require("./contorllerAI.js");
+
+var neataptic = require("./neataptic.js");
+
 var Neat    = neataptic.Neat;
 var Methods = neataptic.methods;
 var Config  = neataptic.Config;
@@ -58,19 +65,19 @@ setTimeout(function ()
     /**
      * 创建对应数目的小恐龙游戏iframe
      */
-    createIframe(neat.population.length);
+    gameLib.createIframe(neat.population.length);
 
     setTimeout(function ()
     {
         /**
          * 让游戏启动起来
          */
-        eachIframe(function (_win){
-            pressJump(_win);
+        gameLib.eachIframe(function (_win){
+            gameLib.pressJump(_win);
         });
 
         setZeroTimeout(function (){
-            eachIframe(function (_win, _index){
+            gameLib.eachIframe(function (_win, _index){
 
                 /**
                  * 当小恐龙游戏结束时进行对神经网络进行打分
@@ -91,7 +98,7 @@ setTimeout(function ()
                 /**
                  * 获取小恐龙游戏的第一个障碍物
                  */
-                var obstaclesAttr = getObstaclesAttr(_win, 0, ["xPos", "yPos", "size", "typeConfig", "speedOffset"]);
+                var obstaclesAttr = gameLib.getObstaclesAttr(_win, 0, ["xPos", "yPos", "size", "typeConfig", "speedOffset"]);
 
                 /**
                  * 构建输入给神经网络的数据
@@ -134,7 +141,7 @@ setTimeout(function ()
                 var controllerAIOutput = controllerAINetwork.activate(controllerAIInput);
 
                 if(controllerAIInput[2] > 0.5){
-                    downDuck(_win);
+                    gameLib.downDuck(_win);
                 }
                 
                 if(
@@ -142,11 +149,11 @@ setTimeout(function ()
                     && _win.Runner.instance_.tRex.ducking
                     && !_win.Runner.instance_.tRex.jumping
                 ){
-                    upDuck(_win);
+                    gameLib.upDuck(_win);
                 }
 
                 if(controllerAIInput[0] > 0.5){
-                    pressJump(_win);
+                    gameLib.pressJump(_win);
                 }
 
 
@@ -158,13 +165,13 @@ setTimeout(function ()
              * 所有小恐龙游戏结束时(全死了)
              * 进行遗传和进化突变来诞生下一代
              */
-            if(isAllEnd()){
+            if(gameLib.isAllEnd()){
                 neat.evolve().then(function ()
                 {
                     console.log("第" + neat.generation + "代  ----  最高分 " + HighestScore);
                     G_deaded = [];
-                    eachIframe(function (_win, _index){
-                         restart(_win);
+                    gameLib.eachIframe(function (_win, _index){
+                         gameLib.restart(_win);
                     });
                     HighestScore = 0;
                     setZeroTimeout(thisFun);

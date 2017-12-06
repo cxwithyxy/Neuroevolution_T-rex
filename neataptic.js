@@ -25,14 +25,15 @@
  * 
  */
 (function webpackUniversalModuleDefinition(root, factory) {
-	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory(require("child_process"), require("os"));
-	else if(typeof define === 'function' && define.amd)
-		define(["child_process", "os"], factory);
-	else if(typeof exports === 'object')
-		exports["neataptic"] = factory(require("child_process"), require("os"));
-	else
-		root["neataptic"] = factory(root["child_process"], root["os"]);
+	// if(typeof exports === 'object' && typeof module === 'object')
+	// 	module.exports = factory(require("child_process"), require("os"));
+	// else if(typeof define === 'function' && define.amd)
+	// 	define(["child_process", "os"], factory);
+	// else if(typeof exports === 'object')
+	// 	exports["neataptic"] = factory(require("child_process"), require("os"));
+	// else
+	// 	root["neataptic"] = factory(root["child_process"], root["os"]);
+  module.exports = factory(root["child_process"], root["os"]);
 })(this, function(__WEBPACK_EXTERNAL_MODULE_21__, __WEBPACK_EXTERNAL_MODULE_25__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache

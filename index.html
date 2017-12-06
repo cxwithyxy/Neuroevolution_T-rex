@@ -12,35 +12,6 @@
     </style>
 </head>
 <body>
-    <script type="text/javascript">
-        setTimeout(function (){
-
-            var body = document.getElementsByTagName('body')[0];
-            
-            function createScript(_path, _do)
-            {
-                var scriptDom = document.createElement("script");
-                scriptDom.src = _path;
-                scriptDom.onload = function (){
-                    _do?_do():0;
-                }
-                return scriptDom;
-            }
-
-            body.appendChild(createScript("zeroTimeout.js", function ()
-            {
-                body.appendChild(createScript("neataptic.js", function ()
-                {
-                    body.appendChild(createScript("gameLib.js", function ()
-                    {
-                        body.appendChild(createScript("contorllerAI.js", function ()
-                        {
-                            body.appendChild(createScript("index.js" + "?v=" + Math.random()));
-                        }));
-                    }));
-                }));
-            }));
-        });
-    </script>
+    <script type="text/javascript" id="bl-script" main="./index.js" src="browserify-loader.js"></script>
 </body>
 </html>
