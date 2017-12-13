@@ -17,7 +17,11 @@
     /**
      * 初始化基础神经网络
      */
-    var startNetwork = new Architect.Perceptron(inputNum, inputNum + outputNum, outputNum);
+    var startNetwork = new Architect.Perceptron(
+        inputNum,
+        Math.round((inputNum + outputNum)*2/3),
+        outputNum
+    );
 
     var popsize = 50;
 
