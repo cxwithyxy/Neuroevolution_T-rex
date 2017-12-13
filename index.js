@@ -82,7 +82,18 @@ setTimeout(function ()
                  * 获得神经网络输出的结果,小恐龙大脑对当前状态的判断,目标状态应该是如何的
                  */
                 var res = brainAIs.activateBrain(_index, inputs);
-                
+
+                var resFilted = [0, 0, 0];
+
+                var bigestElem = Math.max.apply(Math, res);
+
+                var bigestIndex = res.findIndex(function (_elem)
+                {
+                    return _elem == bigestElem;
+                })
+
+                resFilted[bigestIndex] = 1;
+
                 var nowState = [
                     _win.Runner.instance_.tRex.jumping ? 1 : 0,
                     !_win.Runner.instance_.tRex.ducking && !_win.Runner.instance_.tRex.jumping ? 1 : 0,
@@ -93,7 +104,7 @@ setTimeout(function ()
                  * 让controllerAI进行操作,就是小恐龙的手,判断到达目标状态应该进行怎么的操作
                  * @type {[type]}
                  */
-                var controllerAIInput = res.concat(nowState);
+                var controllerAIInput = resFilted.concat(nowState);
 
                 var controllerAIOutput = footAI.activate(controllerAIInput);
 
