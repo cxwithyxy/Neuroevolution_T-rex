@@ -19,5 +19,5 @@
 
     window.addEventListener("message", handleMessage, true);
 
-    window.setZeroTimeout = setZeroTimeout;
+    module.exports = setZeroTimeout;
 })();

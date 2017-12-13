@@ -1,45 +1,11 @@
-var ProjectName = 'Neuroevolution_T-rex_neataptic_v1.0';
+var ProjectName = 'Neuroevolution_T-rex_neataptic_v2.0';
 
-/**
- * 映射neataptic模块中的类
- */
-var Neat    = neataptic.Neat;
-var Methods = neataptic.methods;
-var Config  = neataptic.Config;
-var Architect = neataptic.architect;
+var gameLib = require("./libs/gameLib.js");
+var setZeroTimeout = require("./libs/zeroTimeout.js");
+var footAI = require("./Evolving-Neural-Networks-through-Augmenting-Topologies/footAI.js");
+var brainAIs = require("./Evolving-Neural-Networks-through-Augmenting-Topologies/brainAIs.js");
 
-/**
- * 设定小恐龙的数据输入和输出数目
- */
-var inputNum = 12;
-var outputNum = 2;
 
-/**
- * 初始化基础神经网络
- */
-var startNetwork = new Architect.Perceptron(inputNum, 10, outputNum);
-
-/**
- * 初始化遗传进化神经网络
- */
-var neat = new Neat(
-    inputNum,
-    outputNum,
-    function (_network)
-    {
-        return _network.score;
-    },
-    {
-        popsize: 50,
-        mutation: [Methods.mutation.MOD_WEIGHT],
-        // selection: Methods.selection.POWER,
-        mutationRate: 0.5,
-        mutationAmount: Math.round(50*0.5),
-        // fitnessPopulation: true,
-        network: startNetwork,
-        elitism: Math.round(50*0.2)
-    }
-);
 
 /**
  * 初始化小恐龙死亡列表
@@ -56,19 +22,19 @@ setTimeout(function ()
     /**
      * 创建对应数目的小恐龙游戏iframe
      */
-    createIframe(neat.population.length);
+    gameLib.createIframe(brainAIs.length());
 
     setTimeout(function ()
     {
         /**
          * 让游戏启动起来
          */
-        eachIframe(function (_win){
-            pressJump(_win);
+        gameLib.eachIframe(function (_win){
+            gameLib.pressJump(_win);
         });
 
         setZeroTimeout(function (){
-            eachIframe(function (_win, _index){
+            gameLib.eachIframe(function (_win, _index){
 
                 /**
                  * 当小恐龙游戏结束时进行对神经网络进行打分
@@ -76,7 +42,7 @@ setTimeout(function ()
                  */
                 if(_win.Runner.instance_.crashed){
                     if(G_deaded.indexOf(_index) == -1){
-                        neat.population[_index].score = Math.ceil(_win.Runner.instance_.distanceRan);
+                        brainAIs.setBrainScore(_index, Math.ceil(_win.Runner.instance_.distanceRan));
                         var tempHighestScore = Number(_win.Runner.instance_.distanceMeter.digits.join(""));
                         if(tempHighestScore > HighestScore){
                             HighestScore = tempHighestScore;
@@ -87,59 +53,78 @@ setTimeout(function ()
                 }
 
                 /**
-                 * 预设小恐龙下蹲中继器
-                 */
-                if(typeof _win.isDucked == typeof UDF){
-                    _win.isDucked = 0;
-                }
-
-                /**
                  * 获取小恐龙游戏的第一个障碍物
                  */
-                var obstaclesAttr = getObstaclesAttr(_win, 0, ["xPos", "yPos", "size", "typeConfig", "speedOffset"]);
+                var obstaclesAttr = gameLib.getObstaclesAttr(_win, 0, ["xPos", "yPos", "size", "typeConfig", "speedOffset"]);
 
                 /**
                  * 构建输入给神经网络的数据
                  */
+                
+                var obstaclesWidth = 0;
+                if(obstaclesAttr["typeConfig"].width){
+                    obstaclesWidth = obstaclesAttr["typeConfig"].width * obstaclesAttr["size"];
+                }
+
+                var obstaclesHeight = 0;
+                if(obstaclesAttr["typeConfig"].height){
+                    obstaclesHeight = obstaclesAttr["typeConfig"].height;
+                }
+                
                 var inputs = [
-                    obstaclesAttr["xPos"],
-                    obstaclesAttr["typeConfig"].width ? obstaclesAttr["typeConfig"].width : 0,
-                    obstaclesAttr["size"],
-                    _win.Runner.instance_.tRex.xPos,
-                    _win.Runner.instance_.tRex.config.WIDTH,
-                    obstaclesAttr["yPos"],
-                    obstaclesAttr["typeConfig"].height ? obstaclesAttr["typeConfig"].height : 0,
-                    _win.Runner.instance_.tRex.yPos,
-                    _win.Runner.instance_.tRex.config.HEIGHT,
-                    obstaclesAttr["speedOffset"],
-                    _win.Runner.instance_.tRex.jumping ? 1 : 0,
-                    _win.isDucked
+                    obstaclesAttr["xPos"] / 450,
+                    obstaclesWidth / 450,
+                    obstaclesAttr["yPos"] / 160,
+                    obstaclesHeight / 160,
                 ];
 
                 /**
-                 * 获得神经网络输出的结果
+                 * 获得神经网络输出的结果,小恐龙大脑对当前状态的判断,目标状态应该是如何的
                  */
-                var res = neat.population[_index].activate(inputs);
-                
-                /**
-                 * 结果[0]大于0.5时跳
-                 */
-                if(res[0] > 0.5){
-                    pressJump(_win);
-                }
+                var res = brainAIs.activateBrain(_index, inputs);
+
+                var resFilted = [0, 0, 0];
+
+                var bigestElem = Math.max.apply(Math, res);
+
+                var bigestIndex = res.findIndex(function (_elem)
+                {
+                    return _elem == bigestElem;
+                })
+
+                resFilted[bigestIndex] = 1;
+
+                var nowState = [
+                    _win.Runner.instance_.tRex.jumping ? 1 : 0,
+                    !_win.Runner.instance_.tRex.ducking && !_win.Runner.instance_.tRex.jumping ? 1 : 0,
+                    _win.Runner.instance_.tRex.ducking ? 1 : 0,
+                ];
 
                 /**
-                 * 结果[1]大于0.5时切换下端模式
+                 * 让controllerAI进行操作,就是小恐龙的手,判断到达目标状态应该进行怎么的操作
+                 * @type {[type]}
                  */
-                if(res[1] > 0.5){
-                    if(_win.isDucked){
-                        upDuck(_win);
-                        _win.isDucked = 0;
-                    }else{
-                        downDuck(_win);
-                        _win.isDucked = 1;
-                    }
+                var controllerAIInput = resFilted.concat(nowState);
+
+                var controllerAIOutput = footAI.activate(controllerAIInput);
+
+                if(controllerAIOutput[2] > 0.5){
+                    gameLib.downDuck(_win);
                 }
+                
+                if(
+                    controllerAIOutput[1] > 0.5 
+                    && _win.Runner.instance_.tRex.ducking
+                    && !_win.Runner.instance_.tRex.jumping
+                ){
+                    gameLib.upDuck(_win);
+                }
+
+                if(controllerAIOutput[0] > 0.5){
+                    gameLib.pressJump(_win);
+                }
+
+
             });
 
             var thisFun = arguments.callee;
@@ -148,13 +133,13 @@ setTimeout(function ()
              * 所有小恐龙游戏结束时(全死了)
              * 进行遗传和进化突变来诞生下一代
              */
-            if(isAllEnd()){
-                neat.evolve().then(function ()
+            if(gameLib.isAllEnd()){
+                brainAIs.evolve().then(function ()
                 {
-                    console.log("第" + neat.generation + "代  ----  最高分 " + HighestScore);
+                    console.log("第" + brainAIs.generation() + "代  ----  最高分 " + HighestScore);
                     G_deaded = [];
-                    eachIframe(function (_win, _index){
-                         restart(_win);
+                    gameLib.eachIframe(function (_win, _index){
+                         gameLib.restart(_win);
                     });
                     HighestScore = 0;
                     setZeroTimeout(thisFun);
