@@ -1,6 +1,6 @@
 (function ()
 {
-    var neataptic = require("./neataptic.js");
+    var neataptic = require("./libs/neataptic.js");
 
     var Neat    = neataptic.Neat;
     var Methods = neataptic.methods;

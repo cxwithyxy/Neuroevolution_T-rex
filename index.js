@@ -1,54 +1,11 @@
-var ProjectName = 'Neuroevolution_T-rex_neataptic_v1.0';
+var ProjectName = 'Neuroevolution_T-rex_neataptic_v2.0';
 
-/**
- * 映射neataptic模块中的类
- */
+var gameLib = require("./libs/gameLib.js");
+var setZeroTimeout = require("./libs/zeroTimeout.js");
+var footAI = require("./Evolving-Neural-Networks-through-Augmenting-Topologies/footAI.js");
+var brainAIs = require("./Evolving-Neural-Networks-through-Augmenting-Topologies/brainAIs.js");
 
-var gameLib = require("./gameLib.js");
-var setZeroTimeout = require("./zeroTimeout.js");
-var controllerAINetwork = require("./contorllerAI.js");
 
-var neataptic = require("./neataptic.js");
-
-var Neat    = neataptic.Neat;
-var Methods = neataptic.methods;
-var Config  = neataptic.Config;
-var Architect = neataptic.architect;
-
-/**
- * 设定小恐龙的数据输入和输出数目
- */
-var inputNum = 4;
-var outputNum = 3;
-
-/**
- * 初始化基础神经网络
- */
-var startNetwork = new Architect.Perceptron(inputNum, inputNum + outputNum, outputNum);
-
-var popsize = 50;
-
-/**
- * 初始化遗传进化神经网络
- */
-var neat = new Neat(
-    inputNum,
-    outputNum,
-    function (_network)
-    {
-        return _network.score;
-    },
-    {
-        popsize: popsize,
-        mutation: [Methods.mutation.MOD_WEIGHT],
-        // selection: Methods.selection.POWER,
-        mutationRate: 0.5,
-        mutationAmount: Math.round(popsize*0.5),
-        // fitnessPopulation: true,
-        network: startNetwork,
-        elitism: Math.round(popsize*0.2)
-    }
-);
 
 /**
  * 初始化小恐龙死亡列表
@@ -65,7 +22,7 @@ setTimeout(function ()
     /**
      * 创建对应数目的小恐龙游戏iframe
      */
-    gameLib.createIframe(neat.population.length);
+    gameLib.createIframe(brainAIs.length());
 
     setTimeout(function ()
     {
@@ -85,7 +42,7 @@ setTimeout(function ()
                  */
                 if(_win.Runner.instance_.crashed){
                     if(G_deaded.indexOf(_index) == -1){
-                        neat.population[_index].score = Math.ceil(_win.Runner.instance_.distanceRan);
+                        brainAIs.setBrainScore(_index, Math.ceil(_win.Runner.instance_.distanceRan));
                         var tempHighestScore = Number(_win.Runner.instance_.distanceMeter.digits.join(""));
                         if(tempHighestScore > HighestScore){
                             HighestScore = tempHighestScore;
@@ -124,7 +81,7 @@ setTimeout(function ()
                 /**
                  * 获得神经网络输出的结果,小恐龙大脑对当前状态的判断,目标状态应该是如何的
                  */
-                var res = neat.population[_index].activate(inputs);
+                var res = brainAIs.activateBrain(_index, inputs);
                 
                 var nowState = [
                     _win.Runner.instance_.tRex.jumping ? 1 : 0,
@@ -138,21 +95,21 @@ setTimeout(function ()
                  */
                 var controllerAIInput = res.concat(nowState);
 
-                var controllerAIOutput = controllerAINetwork.activate(controllerAIInput);
+                var controllerAIOutput = footAI.activate(controllerAIInput);
 
-                if(controllerAIInput[2] > 0.5){
+                if(controllerAIOutput[2] > 0.5){
                     gameLib.downDuck(_win);
                 }
                 
                 if(
-                    controllerAIInput[1] > 0.5 
+                    controllerAIOutput[1] > 0.5 
                     && _win.Runner.instance_.tRex.ducking
                     && !_win.Runner.instance_.tRex.jumping
                 ){
                     gameLib.upDuck(_win);
                 }
 
-                if(controllerAIInput[0] > 0.5){
+                if(controllerAIOutput[0] > 0.5){
                     gameLib.pressJump(_win);
                 }
 
@@ -166,9 +123,9 @@ setTimeout(function ()
              * 进行遗传和进化突变来诞生下一代
              */
             if(gameLib.isAllEnd()){
-                neat.evolve().then(function ()
+                brainAIs.evolve().then(function ()
                 {
-                    console.log("第" + neat.generation + "代  ----  最高分 " + HighestScore);
+                    console.log("第" + brainAIs.generation() + "代  ----  最高分 " + HighestScore);
                     G_deaded = [];
                     gameLib.eachIframe(function (_win, _index){
                          gameLib.restart(_win);
